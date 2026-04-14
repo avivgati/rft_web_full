@@ -1,16 +1,17 @@
 ﻿<Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Rft_Wpf_Web"
-        xmlns:shell="http://schemas.microsoft.com/winfx/2006/xaml/presentation/shell" xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="Rft_Wpf_Web.MainWindow"
-        WindowStyle="None"
-        mc:Ignorable="d"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Rft_Wpf_Web"
+    xmlns:shell="http://schemas.microsoft.com/winfx/2006/xaml/presentation/shell" xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="Rft_Wpf_Web.MainWindow"
+    WindowStyle="None"
+    mc:Ignorable="d"
     Background="#483D8B"
-        WindowState="Maximized"
-        Title="MainWindow" Height="450" Width="800"
-        >
+    MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
+    WindowState="Maximized"
+    Title="MainWindow" Height="450" Width="800"
+    >
 
     <WindowChrome.WindowChrome>
         <!-- CaptionHeight defines the draggable area (e.g., 32px) -->
