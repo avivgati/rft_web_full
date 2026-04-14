@@ -1,0 +1,527 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Nanoware App</title>
+
+<!-- Sets the basepath for the library if not in same directory -->
+<script type="text/javascript">
+  mxBasePath = './lib/mxGraph/src';
+</script>
+
+<!-- d3 js -->
+<script src="lib/d3.min.js" type="text/javascript"></script>
+
+<!-- JQuery base -->
+<script src="lib/jquery/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="lib/jquery/js/jquery-ui.js" type="text/javascript"></script>
+<script src="lib/jquery/js/datatables.min.js" type="text/javascript"></script>
+
+<script src="lib/query_builder/query-builder.standalone.min.js" type="text/javascript"></script>
+<link href="lib/query_builder/query-builder.default.min.css" rel="stylesheet" type="text/css" >
+
+<!-- Datatables -->
+<link href="css/datatable.css" rel="stylesheet" type="text/css" >
+<link href="lib/jquery_easyui/jquery.dataTables.min.css" rel="stylesheet" type="text/css" >
+
+<!-- jQuery EasyUI -->
+<link rel="stylesheet" id="easyuiStyle" type="text/css" href="lib/jquery_easyui/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="lib/jquery_easyui/icon.css">
+<script type="text/javascript" src="lib/jquery_easyui/jquery.easyui.min.js"></script>
+
+<!-- Redux 
+<script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script-->
+<!-- common -->
+<script src="js/util.js"></script>
+<script src="js/database.js"></script>
+<script src="js/nanoware.js"></script>
+<script src="js/index.js"></script>
+<script src="js/sensor.js"></script>
+<script src="js/project.js"></script>
+<script src="js/nanobrain.js"></script>
+<script src="js/record.js"></script>
+<script src="js/code.js"></script>
+
+<!-- mxGraph -->
+<script src="lib/mxGraph/mxClient.js"></script>
+<script src="js/mxDraw.js"></script>
+<script src="js/pipe.js"></script>
+<script src="js/activePipe.js"></script>
+
+<!-- tree -->
+<link rel="stylesheet" href="lib/aimara/Aimara.css">
+<script src="lib/aimara/Aimara.js"></script>
+
+
+<!-- fancy tree -->
+<script src="lib/fancytree/jquery.fancytree-all-deps.js"></script>
+<link href="lib/fancytree/skin-xp/ui.fancytree.min.css" rel="stylesheet" type="text/css">
+
+
+<!-- autocomplete widget -->
+<link rel="stylesheet" href="lib/awesomplete/awesomplete.css">
+<script src="lib/awesomplete/awesomplete.js"></script>
+
+
+<!-- Gauge & graph libraries -->
+<script src="lib/radial.js"></script>
+<script src="lib/Chart.min.js"></script>
+<!--script src="lib/accordiom.min.js"></script>-->
+
+<!--<script src="randomgraph.js"></script>-->
+
+<script src="lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Include Ace-diff JS and CSS (using unpkg.com CDN in this case) -->
+<script src="lib/ace_diff/ace-diff.min.js"></script>
+<link href="lib/ace_diff/ace-diff.min.css" rel="stylesheet">
+  
+<!-- stylesheet -->
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link rel="stylesheet" href="css/custom.css" type="text/css">
+<!-- Pretty checkbox/radio -->
+<link rel="stylesheet" href="css/pretty-checkbox.css" type="text/css">
+
+</head>
+
+<body oncontextmenu="return false;">
+    <div style="display: flex;flex-flow: column;height: 100%;">
+        <!-- Top menu -->
+        <div id="tt" class="panel-top">
+            <a href="#" id="menuProject" class="easyui-menubutton" iconCls="icon-chart" menu='#mmProject'>Project</a>
+            <div id="mmProject" style="width:150px;">
+                <div iconCls="icon-add" onclick="NanoProject.new();">New Project...</div>
+                <div iconCls="icon-no" onclick="NanoProject.close();">Close Project</div>
+                <div iconCls="icon-graph-no" onclick="NanoProject.deleteChannels();">Clear View</div>
+                <div iconCls="icon-import" onclick="$('#importFile').trigger('click');">Import Project...</div>
+                <div iconCls="icon-trash" onclick="NanoProject.clear();">Delete Database...</div>
+            </div>
+            <a href="#" id="menuSetting" plain="true" onclick="onSettings()" class="easyui-linkbutton" iconCls="icon-config">Settings...</a>
+            <a href="#" id="menuAlarm" class="easyui-menubutton" iconCls="icon-alarm" menu='#mmAlarm'>Alarms</a>
+            <div id="mmAlarm" style="width:150px;">
+                <div iconCls="icon-new" onclick="NanoAlarm.clear()">Clear Alarms Table</a></div>
+            </div>
+            <a href="#" id="menuHelp" class="easyui-menubutton" iconCls="icon-help" menu='#mmHelp'>Help</a>
+            <div id="mmHelp" style="width:150px;">
+                <div iconCls="icon-info" onclick="about()">About...</div>
+                <div class="menu-sep"></div>
+                <div iconCls="icon-web" onclick="openWebsite();">Web Site</div>
+                <div iconCls="icon-facebook" onclick="openFacebook();">Facebook</div>
+            </div>
+        </div>
+        <!-- End of top menu -->
+
+        <!-- Panels Layout -->
+        <div class="easyui-layout" style="width:100%;height:100%;display:none" id="panels">
+            <!-- West panel -->
+            <div region="west" split="true" title="Connected" style="width:350px;height:100%">
+                <div id="projectsDiv">
+                    <div style="margin-left: 10px">
+                        <div id="projTree"></div>
+                    </div>
+                </div>
+                <div id="projectExplorer">
+                    <div title="Packages">
+						<div id="tree" style="height:60%;overflow-y:scroll;margin-bottom:10px;">
+						</div>
+                        <fieldset class="inputs">
+                            <input id="treeSearch" placeholder="Find..." autocomplete="off" style="width:200px; margin-right:20px;"><br><br>
+                            <a href='#' class='easyui-linkbutton' onclick='NanoPkgs.sendPackage()' iconCls='icon-ok'>Submit</a>
+                            <a href='#' class='easyui-linkbutton' onclick='NanoPkgs.reload()' iconCls='icon-reload'>Reload</a>
+                        </fieldset>
+					</div>
+                </div>
+				<br><br>
+            </div> <!-- Close West panel -->
+            <!-- East panel -->
+            <div region="east" collapsed="true" split="true" title="&nbsp" style="width:500px;height:100%;" class="unselectable">
+                <!-- Tabs -->
+                <div id="tabs" class="easyui-tabs">
+                    <!-- Code tab -->
+					<div title="Code" style="display: flex; flex-flow: column; height: 100%;">
+                        <div style="margin-left:20px;line-height:20px;flex: 0 1 auto;">
+                            <div><b>Method: </b><span id="codeNavTitleMethod"></span></div>
+                            <div><b>File: </b><span id="codeNavTitleFile"></span></div>
+                            <div><b>Package: </b><span id="codeNavTitlePackage"></span></div>
+                        </div>
+                        <div style="flex: 0 1 auto;" class="panel-header codeHeader">
+                            <a href='#' id='codeNavRevert' class='easyui-linkbutton' plain="true" title="Revert to original code" iconCls='icon-trash'></a>
+                            <a href='#' id='codeNavSend' class='easyui-linkbutton' plain="true" title="Save & Run new code" iconCls='icon-save'></a>
+                            <a href='#' id='codeNavDiff' class='easyui-linkbutton' plain="true" title="Show differences" iconCls='icon-eye'></a>
+                            <a href='#' id='codeNavReload' class='easyui-linkbutton' plain="true" title="Reload code" iconCls='icon-reload'></a>
+                            <a href="#" id="codeNavBack"  class="easyui-linkbutton" plain="true" title="Trace back" iconCls="icon-left"></a>
+                            <a href="#" id="codeNavForward" class="easyui-linkbutton" plain="true" title="Trace forward" iconCls="icon-right"></a>
+                            <!-- <a href="#" id="codeNavUp"  class="easyui-linkbutton" plain="true" iconCls="icon-up"></a> -->
+                            <a href="#" id="codeNavDown" class="easyui-linkbutton" plain="true" title="Fetch complete file" iconCls="icon-doc"></a>
+                        </div>
+                        <div style="flex: 1 1 auto; width:100%; display:inline-block; position:relative;">
+                            <div class="acediff" style="position:relative; top:0; right:0; bottom:0; left:0; height:100%;"></div>
+                        </div>
+                    </div>
+                    <!-- Log tab -->
+					<div title="Log">
+                        <table id="logDg" title="Logs" class="easyui-datagrid"
+							toolbar="#logTools" fitColumns="true" singleSelect="true">
+							<thead>
+								<tr>
+                                    <th field="time" width="80">Time</th>
+									<th field="log" width="180">Log</th>
+								</tr>
+							</thead>
+						</table>
+                        <div id="logTools">
+							<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-trash" plain="true" onclick="codeEditor.clearLog()">Clear</a>
+							<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-pause" plain="true" id="logPause" onclick="codeEditor.enableLog()">Pause</a>
+						</div>
+					</div>
+                    <!-- Injects tab -->
+					<div title="Injects">
+						<table id="injectsDg" title="Injects" class="easyui-datagrid"
+							toolbar="#injectTools" rownumbers="true" fitColumns="true" singleSelect="true">
+							<thead>
+								<tr>
+									<th field="source" width="80">Source</th>
+									<th field="name" width="80">Method</th>
+									<th field="target" width="80">Target</th>
+								</tr>
+							</thead>
+						</table>
+						<div id="injectTools">
+							<a href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true" onclick="codeEditor.reload()">Reload</a>
+							<a href="#" class="easyui-linkbutton" iconCls="icon-user-add" plain="true" onclick="codeEditor.goto()">Goto Code</a>
+							<a href="#" class="easyui-linkbutton" iconCls="icon-trash" plain="true" onclick="codeEditor.delete()">Delete</a>
+						</div>
+					</div>
+					<!-- Sensors tab -->
+                    <div title="Sensors">
+                        <div id="sensorsDiv" style="margin: 10px"></div>
+                    </div>
+					<!-- Alarms tab -->
+					<div title="Alarms">
+						<table class="display cell-border" id="alarmTbl" align="left">
+							<thead>
+								<tr>
+									<th width="60">Alarm ID</th>
+									<th width="150">Channel</th>
+									<th width="60">Alarm Severity</th>
+									<th width="160">Alarm Data</th>
+									<th width="120">Alarm Time</th>
+								</tr>
+							</thead>
+							<tfoot>
+								<tr>
+									<th><input type="text" name="search_aid" value="Search Alarm ID" title="Search Alarm ID" class="search_init" /></th>
+									<th><input type="text" name="search_name" value="Search Name" title="Search Name" class="search_init" /></th>
+									<th><input type="text" name="search_severity" value="Search Severity" title="Search Severity" class="search_init" /></th>
+									<th><input type="text" name="search_type" value="Search By Type" title="Search By Type" class="search_init" /></th>
+									<th><input type="text" name="search_time" value="Search Time" title="Search Time" class="search_init" /></th>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+                </div> <!-- Close Tabs -->
+            </div> <!-- Close East panel -->
+            <!-- Center panel -->
+			<div region="center" style="overflow:hidden;">
+			    <div id="mainTabs" class="easyui-tabs">
+					<div title="Start" style="padding-top:50px; padding-left:100px">
+						<div style="font-weight:bold"><u>Quick Actions:</u></div>
+						<div style="padding-left:20px;"><a class="nicehref first after" href="javascript:void(0)" onclick="NanoProject.new();">Create a new project...</a></div>
+						<div style="padding-left:20px;"><a class="nicehref first after" href="javascript:void(0)" onclick="NanoProject.clearRecent();">Clear recent projects list</a></div>
+						<div style="padding-left:20px;"><a class="nicehref first after" href="javascript:void(0)" onclick="onSettings();">General settings...</a></div>
+						<div style="padding-left:20px;"><a class="nicehref first after" href="javascript:void(0)" onclick="$.messager.alert('TODO','TODO!','info');">Help</a></div>
+						<br>
+						<div style="font-weight:bold"><u>Recent Projects</u></div>
+						<div style="padding-left:20px;" id="recentProjects"></div>
+					</div>
+					<div title="Main View" style="overflow:hidden;">
+						<div style="overflow:hidden;width:100%;height:100%">
+							<div style="border-bottom: 1px solid navy; width: 100%;height:92px; padding: 3px">
+								<div id="outlineContainer" style="float:left;overflow:hidden;width:160px;height:90px;background:white;z-index:10;border:2px solid lightgray;"></div>
+								<div style="float:left;z-index:10;margin-left:5px;">
+									<fieldset class="inputs">
+										<input type="text" id="findMethod" autocomplete="off" placeholder="Search Method/Class"><br>
+										<input type="text" id="findPipe" autocomplete="off" placeholder="Search Pipe">
+									</fieldset>
+								</div>
+								<div class="toolbar" style="float:left;z-index:10;margin-left:5px;">
+									<a href="#" id="mxBack"  class="easyui-linkbutton" plain="true" iconCls="icon-left"></a>
+									<a href="#" id="mxForward" class="easyui-linkbutton" plain="true" iconCls="icon-right"></a>
+									<a href="#" id="mxHome" class="easyui-linkbutton" plain="true" iconCls="icon-home"></a>
+								</div>
+								<div class="toolbar" style="float:left;margin-left:5px;padding: 9px;">
+									<span><b>Project: </b></span><span id='projectTitle' style='margin:0 20 0 5;'></span>
+									<span><b>View: </b></span><span id='viewType' style='margin:0 20 0 5;'>Main View</span>
+									<span><b>Focus: </b></span><span id='focusType' style='margin:0 20 0 5;'></span>
+								</div>
+							</div>
+							<div id="mx_holder" class="draw_holder"></div>
+							<div id="loading_fade">Loading View...</div>
+						</div>
+					</div>
+				</div>
+            </div> <!-- Close Center panel -->
+            <div region="south" split="true" collapsed="true" border="false" title="<center><span id='recorderTitle'>Record and test View</span></center>" style="width:100%;height:400px;background-color: #F9F9F9;overflow-y:hidden;">
+                <div id="recTabs" class="easyui-tabs" style="background-color: #F9F9F9;overflow-y:hidden;border: 0px; width:500px; float:left">
+					<div title="Constraints">
+						<table class='td01 bold' style="background-color: #F9F9F9; width:100%">
+							<tr><td style="width:40%">Number of records</td><td><input id="activityMaxRecords"></td></tr>
+							<tr><td>Time in seconds</td><td><input id="activityMaxTime"></td></tr>
+							<tr><td>Filters</td><td><input id="activityFilter" multiple="true" editable="false" valueField="id" textField="text" class="easyui-combobox" style="width:250px"></td></tr>
+						</table>
+					</div>
+					<div title="Triggers">
+						<table class='td01 p3'>
+							<tr class='hdrb'><td colspan="2">Start Triggers</td></tr>
+							<tr>
+								<td class="bold" style="width:30%">Software Triggers</td>
+								<td><input id="activitySoftTriggerSelect" multiple="true" editable="false" valueField="id" textField="text" class="easyui-combobox" style="width:300px"></td>
+							</tr>
+							<tr class="bold">
+								<td>Channel</td>
+								<td id="activityStartTrigger">None</td>
+							</tr>
+							<tr class='hdrb'><td colspan="2">Stop Triggers</td></tr>
+							<tr class="bold">
+								<td>Channel</td>
+								<td id="activityStopTrigger">None</td>
+							</tr>
+						</table>
+					</div>
+					<div title="Watch">
+						<table class='td01 p3'>
+							<tr class='hdrb'><td>Software Triggers</td></tr>
+							<tr><td><input id="activityWatchTrigger" multiple="true" editable="false" valueField="id" textField="text" class="easyui-combobox" style="width:300px"></td></tr>
+							<tr class='hdrb'><td>Pipes</td></tr>
+							<tr class='bold'><td id="activityPipes">None</td></tr>
+						</table>
+					</div>
+					<div title="Black/White List">
+						<table class='td01 p3'>
+							<tr><td><select id="activityListType"><option value="None">Not in use</option><option value="White">White List</option><option value="Black">Black List</option></select></td></tr>
+							<tr class='bold'><td id="activityList">None</td></tr>
+						</table>
+					</div>
+					<div title="Test">
+						<div style="margin:5px;">
+							<div id="testTitle" class="panel-header" style="text-align:center; padding:5px; margin-bottom:5px; background-color: #ccc;"></div>
+							<div id="testDiv" style="overflow-y:auto; height:50%;"></div>
+							<a href="#" onclick="recordView.startTest();" class="easyui-linkbutton" iconCls="icon-ok" title="Start Test">Start Test</a>
+						</div>
+					</div>
+				</div>
+				<div>
+					<table class='td01' style="width:50%;float:left;margin:2px;">
+						<tr><td colspan="6">
+							<fieldset class="inputs" style="float:left;">
+								<input id="recordsSearch" placeholder="Filter Method..." autocomplete="off" style="width:200px;">
+							</fieldset>
+							<div class="pretty p-default p-curve" style="margin-left:20px; margin-top:8px;" title="Automatically scroll the records table while playing. Also both tables will scroll together">
+							<input type="checkbox" id="displaySmartScroll"/>
+							<div class="state p-primary-o">
+								<label>Smart Scroll</label>
+							</div>
+						</div>
+						<div class="pretty p-default p-curve" style="margin-left:10px; margin-top:8px;" title="Filter duplicate records.">
+							<input type="checkbox" id="displayFilterDuplicates"/>
+							<div class="state p-primary-o">
+								<label>Filter Duplicates</label>
+							</div>
+						</div>
+						<div class="pretty p-default p-curve" style="margin-left:10px; margin-top:8px;" title="Allow only one opened record row">
+							<input type="checkbox" id="displaySingleRow"/>
+							<div class="state p-primary-o">
+								<label>Open Single Row</label>
+							</div>
+						</div>
+						<div class="pretty p-default p-curve" style="margin-left:10px; margin-top:8px;" title="Focus the selected method in the graph">
+							<input type="checkbox" id="displayFocusSelected"/>
+							<div class="state p-primary-o">
+								<label>Focus Selected Row</label>
+							</div>
+						</div>
+						<div class="pretty p-default p-curve" style="margin-left:10px; margin-top:8px;" title="Record all methods, even if not in view">
+							<input type="checkbox" id="displayRecordAll"/>
+							<div class="state p-primary-o">
+								<label>Record All</label>
+							</div>
+						</div>
+						</td></tr>
+						<tr><td colspan="6">
+							<div style="text-align:center;">
+								<a href="#" id="activityRestart" class="easyui-linkbutton" plain="true" disabled iconCls="icon-rewind" title="Rewind"></a>
+								<a href="#" id="activityPrev" class="easyui-linkbutton" plain="true" disabled iconCls="icon-prev" title="Previous"></a>
+								<!--<a href="#" id="activityReplay" class="easyui-linkbutton" plain="true" disabled iconCls="icon-replay" title="Replay"></a>-->
+								<a href="#" id="activityPlay" class="easyui-linkbutton" plain="true" disabled iconCls="icon-play" title="Play"></a>
+								<a href="#" id="activityNext" class="easyui-linkbutton" plain="true" disabled iconCls="icon-next" title="Next"></a>
+								<a href="#" id="activityGotoTrigger" class="easyui-linkbutton" plain="true" disabled iconCls="icon-flag" title="Goto trigger"></a>
+								<a href="#" id="activityGotoEnd" class="easyui-linkbutton" plain="true" disabled iconCls="icon-goto-end" title="Goto end"></a>
+								
+							</div>
+						</td></tr>
+						<tr style="text-align:center;"><td width="15%"><span id="activityIndexL" style="font-weight:bold;"></span></td>
+							<td width="20%">
+								<a href="#" id="activityStartL"  class="easyui-linkbutton" plain="true" disabled iconCls="icon-record" title="Start/Stop recording"></a>
+								<a href="#" id="activityLoadL" class="easyui-linkbutton" plain="true" disabled iconCls="icon-folder" title="Open test"></a>
+								<a href="#" id="activitySaveL" class="easyui-linkbutton" plain="true" disabled iconCls="icon-save" title="Save test"></a>
+								<a href="#" id="activityCloseL"  class="easyui-linkbutton" plain="true" disabled iconCls="icon-no" title="Cancel recording"></a>
+							</td>
+							<td width="15%"><span id="activityTimeL" style="font-weight:bold;"></span></td>
+							<td width="15%"><span id="activityIndexR" style="font-weight:bold;"></span></td>
+							<td width="20%">
+								<a href="#" id="activityStartR" class="easyui-linkbutton" plain="true" disabled iconCls="icon-record" title="Start/Stop recording"></a>
+								<a href="#" id="activityLoadR" class="easyui-linkbutton" plain="true" disabled iconCls="icon-folder" title="Open test"></a>
+								<a href="#" id="activitySaveR" class="easyui-linkbutton" plain="true" disabled iconCls="icon-save" title="Save test"></a>
+								<a href="#" id="activityCloseR"  class="easyui-linkbutton" plain="true" disabled iconCls="icon-no" title="Cancel recording"></a>
+							</td>
+							<td width="15%"><span id="activityTimeR" style="font-weight:bold;"></span></td>
+						</tr>
+						<tr><td colspan="3">
+							<div class="diffContainer">
+								<div class="diffHdr">
+									<div class="diffNum">#</div>
+									<div class="diffHdrItem">Source</div>
+									<div class="diffHdrItem">Method</div>
+									<div class="diffHdrItem">Target</div>
+								</div>
+								<div class="diffContent" id="diffLeft"></div>
+							</div>
+							</td>
+							<td colspan="3">
+							<div class="diffContainer">
+								<div class="diffHdr">
+									<div class="diffNum">#</div>
+									<div class="diffHdrItem">Source</div>
+									<div class="diffHdrItem">Method</div>
+									<div class="diffHdrItem">Target</div>
+								</div>
+								<div class="diffContent" id="diffRight"></div>
+							</div>
+						</td></tr>
+					</table>
+				</div>
+				<div style="background-color: #F9F9F9; float:left;width:400px;margin:2px;border: 1px solid #ddd">
+					<div id="globalsTree" style="height:60%;width:100%;overflow-y:scroll;">
+					</div>
+					<fieldset class="inputs" style="margin-left:10px;margin-bottom:5px;">
+						<input id="globalsKey" placeholder="Key..." autocomplete="off" style="width:200px;margin-bottom:5px;">
+						<input id="globalsValue" placeholder="Value..." autocomplete="off" style="width:200px;margin-bottom:5px;">
+						<br>
+						<a href='#' id='globalsAdd' class='easyui-linkbutton' iconCls='icon-ok'>Add</a>
+						<a href='#' id='globalsDel' class='easyui-linkbutton' iconCls='icon-no'>Remove</a>
+					</fieldset>
+				</div>
+            </div>
+            <!-- General Dialog -->
+            <div id="dialog" title="Dialog Title">
+                <input type="text" class="hide" id="color">
+                <div id="dlgContent"></div>
+			</div>
+			<!-- Diff Dialog -->
+            <div id="diffDlg" title="Original Code">
+                <div class="codeDiffContainer">
+                </div>
+            </div>
+			<!-- General Dialog -->
+            <div id="about" title="About...">
+				Key: <span id="aboutKey"></span><br>
+				License: <input id="aboutLic" size="30"> <a href='#' class='easyui-linkbutton' onclick='upgradeLicense()' iconCls='icon-ok'>Debug</a>
+				<div style="margin-top: 50px"> Debug </div>
+				<div>
+					<input id="generateLic" size="30">
+					<a href='#' class='easyui-linkbutton' onclick='debugGenerateLic()' iconCls='icon-ok'>Debug</a>
+					<span id="generatedLic"></span>
+				</div>
+            </div>
+            <!-- Project Dialog -->
+            <div id="propDialog" title=" ">
+                <div id="propGrid"></div>
+            </div>
+            <!-- Channel Dialog -->
+            <div id="chDlg">
+                <div id="chTabs" class="easyui-tabs">
+                    <div title="Info" class="tab">
+                        <div id="chInfoContent" style="-webkit-user-select: text"></div>
+                    </div>
+                    <div title="Check" class="tab">
+                        <div id="chCheckContent"></div>
+                        <a href='#' id='chAddCheck' class='easyui-linkbutton' iconCls='icon-add'>Add Check Condition</a>
+                    </div>
+                    <div title="Test" class="tab">
+                        <div id="chTestContent"></div>
+                        <a href='#' id='chAddTest' class='easyui-linkbutton' iconCls='icon-add'>Add Test Configuration</a>
+                    </div>
+                    <div title="Alerts" class="tab">
+                        <div id="chAlertContent"></div>
+                    </div>
+                </div>
+                <!--<a href='#' id='AddCheckParameter' class='easyui-linkbutton' onclick='debug()' iconCls='icon-add'>Add Check Condition</a>-->
+            </div>
+            <!-- Sensor Dialog -->
+            <div id="sensorDlg" title="Sensor Title">
+                <div id="sensorTabs" class="easyui-tabs">
+                    <div title="Counter" class="tab">
+                        <input type="checkbox" id="sensorCounterEnable">Enable
+                    </div>
+                    <div title="Gauge" class="tab">
+                        <input type="checkbox" id="sensorGaugeEnable">Enable<br>
+                        Gauge Minimum: <input id="sensorGaugeMin" type="text"/><br>
+                        Gauge Maximum: <input id="sensorGaugeMax" type="text"/>
+                    </div>
+                    <div title="Graph" class="tab">
+                        <input type="checkbox" id="sensorGraphEnable">Enable
+                    </div>
+                </div>
+            </div>
+            <!-- Popup Dialog -->
+            <div id="popup" title="Dialog Title" style="padding:20px;">
+                <div id="popupContent"></div>
+			</div>
+			<!-- Method view popup -->
+			<div id="methodDialog" style="position:absolute; top:0; right:0; bottom:0; left:0; display:none">
+				<div id="methodTitle" style="padding:5px; font-weight:bold;font-size:13px;background-color:#ccc;border: 1px solid navy;display: inline-block">TITLE</div>
+				<div id="methodCode" style="z-index:100;position:absolute; top:24; right:0; bottom:0; left:0; border: 1px solid navy"></div>
+			</div>
+			<div id="consoleDialog" title="Debug Log">
+				<div id="consoleTxt" style="height: 500px; white-space: pre;"></div><br>
+				<a href="#" onclick='$("#consoleTxt").html("");' class="easyui-linkbutton" plain="false" iconCls="icon-trash" title="Delete">Delete</a>
+			</div>
+			<!-- Tests Dialog -->
+            <div id="testsDlg" title="Records">
+                <table id="testsDg" class="easyui-datagrid"
+					toolbar="#testsDgTools" rownumbers="true" fitColumns="true" fit="true" singleSelect="true">
+					<thead>
+						<tr>
+							<th field="name" width="100">Name</th>
+							<th field="date" width="100">Date</th>
+							<th field="length" width="100">Records</th>
+						</tr>
+					</thead>
+				</table>
+            </div>
+			<div id="testsDgTools">
+				<a href="#" onclick="recordView.deleteTest();" class="easyui-linkbutton" plain="true" iconCls="icon-no" title="Delete"></a>
+				<!--<a href="#" onclick="recordView.compare();" class="easyui-linkbutton" plain="true" iconCls="icon-switch" title="Load"></a>-->
+				<a href="#" onclick="recordView.loadTest();" class="easyui-linkbutton" plain="true" iconCls="icon-folder" title="Load"></a>
+			</div>
+			<!-- Add Trigger Dialog -->
+            <div id="addTriggerDlg" title="Add Trigger" style="padding:20px;">
+                
+            </div>
+            <div id="qBuilderPopup" title="Dialog Title" style="padding:20px;">
+                <b>Condition:</b><br><div id="builder"></div>
+                <b>Action:</b><br><div class='query-builder form-inline'><div class='rules-group-container'><input type='text' id='checkAction' size='80'></div></div>
+                <b>Properties:</b><br><div class='query-builder form-inline'><div class='rules-group-container'>
+                    <label><input type='checkbox' id='checkGlobal'> &nbsp; <b>Global check</b></label><br><br>
+                    <label><input type='checkbox' id='checkDisabled'> &nbsp; <b>disable check</b></label>
+                </div></div>
+            </div>
+            
+        </div> <!-- Close Panels layout -->
+        <div id="preload" style="display:none;">
+        <input type="file" class="file" onchange="NanoProject.import(this);" accept=".nano" id="importFile"/>
+        </div>
+    </div>
+    <div id="fade"></div>
+</body>
+
+</html>
